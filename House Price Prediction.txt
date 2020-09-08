@@ -1,0 +1,224 @@
+#House Price Prediction
+#Loading the Dataset
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+df = pd.read_csv("chennai_house_price_prediction.csv")
+df.shape
+df.head()
+#Data Exploration
+#Describe function
+df.describe()
+df.describe(include='all')
+#Isnull function
+df.isnull().sum()
+#Data types
+df.dtypes
+temp = pd.DataFrame(index=df.columns)
+temp['data_type'] = df.dtypes
+temp['null_count'] = df.isnull().sum()
+temp['unique_count'] = df.nunique()
+temp
+#Univariate Analysis
+#Histogram
+## target variable 
+
+df['SALES_PRICE'].plot.hist(bins = 50)
+plt.xlabel('Sales', fontsize=12)
+(df['SALES_PRICE'].loc[df['SALES_PRICE']<18000000]).plot.hist(bins=50)
+## Area of house in Square feet
+
+df['INT_SQFT'].plot.hist(bins = 50)
+plt.xlabel('Area in sq feet', fontsize=12)
+%Value counts
+# number of bedrooms
+
+df['N_BEDROOM'].value_counts()
+df['N_BEDROOM'].value_counts()/len(df)*100
+df['N_ROOM'].value_counts()
+df['N_BATHROOM'].value_counts()/len(df)
+#Bar Plot
+df['N_BATHROOM'].value_counts().plot(kind = 'bar')
+df['AREA'].value_counts().plot(kind = 'bar')
+# houses with parking facility
+
+df['PARK_FACIL'].value_counts().plot(kind = 'bar')
+df['PARK_FACIL'].value_counts()
+#Data Manipulation
+#1.Drop Duplicates (if any)
+#2.Fill the missing Values
+#3.Correct the data types
+#4.Fix the spelling errors in variables 
+#Drop Duplicates (if any)
+df.drop_duplicates(subset=['AREA']).shape
+df.shape
+#Missing Values
+df.isnull().sum()
+#Drop rows with missing values
+df.dropna(axis=0, how='any')
+df.dropna(axis=1, how='any')
+#1. N_BEDROOM
+df['N_BEDROOM'].mode()
+df['N_BEDROOM'].fillna(value = (df['N_BEDROOM'].mode()[0]), inplace=True)
+#2. N_BATHROOM
+df.loc[df['N_BATHROOM'].isnull()==True]
+for i in range(0, len(df)):
+    if pd.isnull(df['N_BATHROOM'][i])==True:
+        if (df['N_BEDROOM'][i] == 1.0):
+            df['N_BATHROOM'][i] = 1.0
+        else: 
+            df['N_BATHROOM'][i] = 2.0
+#3. QS_OVERALL
+df[[ 'QS_ROOMS','QS_BATHROOM', 'QS_BEDROOM', 'QS_OVERALL']].head()
+temp = (df['QS_ROOMS'] + df['QS_BATHROOM'] + df['QS_BEDROOM'])/3
+pd.concat([df['QS_ROOMS'], df['QS_BATHROOM'], df['QS_BEDROOM'], temp], axis=1).head(10)
+df.loc[df['QS_OVERALL'].isnull()==True].shape
+def fill_na(x):
+    return ((x['QS_ROOMS'] + x['QS_BATHROOM'] + x['QS_BEDROOM'])/3)
+df['QS_OVERALL'] =  df.apply(lambda x: fill_na(x) if pd.isnull(x['QS_OVERALL']) 
+df.isnull().sum()
+#Data Types
+df.dtypes
+# data type of n_bedroom, n_room, n_bathroom
+
+df = df.astype({'N_BEDROOM': 'object', 'N_ROOM': 'object', 'N_BATHROOM': 'object'})
+#Replace categories
+temp = ['AREA','N_BEDROOM','N_BATHROOM','N_ROOM','SALE_COND','PARK_FACIL','BUILDTYPE','UTILITY_AVAIL','STREET','MZZONE']
+for i in temp:
+    print('************ Value Count in', i, '************')
+    print(df[i].value_counts())
+    print('')
+#Update names in column
+
+
+#AREA
+#SALE_COND
+#PARK_FACIL
+#BUILDTYPE
+#UTILITY_AVAIL
+STREET
+df['PARK_FACIL'].replace({'Noo':'No'}, inplace = True)
+df['PARK_FACIL'].value_counts()
+df['AREA'].replace({'TNagar':'T Nagar', 'Adyr': 'Adyar', 'KKNagar': 'KK Nagar',  
+                    'Chrompt': 'Chrompet', 'Chormpet': 'Chrompet','Chrmpet': 'Chrompet',
+                    'Ana Nagar': 'Anna Nagar', 'Ann Nagar': 'Anna Nagar',
+                     'Karapakam': 'Karapakkam' , 'Velchery': 'Velachery'}, inplace = True)
+df['AREA'].value_counts()
+df['SALE_COND'].replace({'PartiaLl':'Partial', 'Partiall': 'Partial', 
+                         'Adj Land': 'AdjLand',  
+                         'Ab Normal': 'AbNormal'}, inplace = True)
+df['SALE_COND'].value_counts()
+df['BUILDTYPE'].replace({'Comercial':'Commercial', 'Other': 'Others'},inplace = True)
+df['UTILITY_AVAIL'].replace({'All Pub':'AllPub'},inplace = True)
+df['STREET'].replace({'NoAccess':'No Access', 'Pavd':'Paved'},inplace = True)
+df.columns
+#1. Interior area and sales price (target)
+# interior area and sales price (target)
+
+df.plot.scatter('INT_SQFT','SALES_PRICE')
+fig, ax = plt.subplots()
+colors = {'Commercial':'red', 'House':'blue', 'Others':'green'}
+ax.scatter(df['INT_SQFT'], df['SALES_PRICE'], c=df['BUILDTYPE'].apply(lambda x: colors[x]))
+plt.show()
+#** 2. Sales Price against no of bedroom and bathroom**
+# sale price of houses wrt number of bedrooms and bathroomms 
+df.pivot_table(values='SALES_PRICE', index='N_BEDROOM', columns='N_BATHROOM', aggfunc='median')
+#*3. QS_OVERALL and sales price *
+#QS_OVERALL and sales price
+
+df.plot.scatter('QS_OVERALL', 'SALES_PRICE')
+fig, axs = plt.subplots(2, 2)
+
+fig.set_figheight(10)
+fig.set_figwidth(10)
+
+axs[0, 0].scatter(df['QS_BEDROOM'], df['SALES_PRICE'])    # QS_BEDROOM and sale price
+axs[0, 0].set_title('QS_BEDROOM')
+
+axs[0, 1].scatter(df['QS_BATHROOM'], df['SALES_PRICE'])   # QS_BATHROOM and price
+axs[0, 1].set_title('QS_BATHROOM')
+
+axs[1, 0].scatter(df['QS_ROOMS'], df['SALES_PRICE'])    # QS_ROOMS and sale price
+axs[1, 0].set_title('QS_ROOMS')
+
+axs[1, 1].scatter(df['QS_OVERALL'], df['SALES_PRICE'])    # QS_OVERALL and sale price
+axs[1, 1].set_title('QS_OVERALL')
+# Create an axes instance
+ax = plt.figure().add_subplot(111)
+ax.set_title('Quality score for Houses')
+
+# Create the boxplot
+bp = ax.boxplot([df['QS_BEDROOM'], df['QS_ROOMS'], df['QS_BATHROOM'], df['QS_OVERALL']])
+# SALE PRICE based on building type
+
+df.groupby('BUILDTYPE').SALES_PRICE.median()
+temp_df = df.loc[(df['BUILDTYPE']=='Commercial')&(df['AREA']=='Anna Nagar')]
+temp_df['SALES_PRICE'].plot.hist(bins=50)
+temp_df = df.loc[(df['BUILDTYPE']=='House')&(df['AREA']=='Anna Nagar')]
+temp_df['SALES_PRICE'].plot.hist(bins=50)
+#Surrounding and Locality
+#AREA – The property in which the real estate is located
+#DIST_MAINROAD – The distance of the property to the main road
+#PARK_FACIL – Whether parking facility is available
+#UTILITY_AVAIL
+#STREET
+#MZZONE
+#5. Building type and parking facility
+# building type and parking facility
+
+df.groupby(['BUILDTYPE', 'PARK_FACIL']).SALES_PRICE.median()
+temp = df.groupby(['BUILDTYPE', 'PARK_FACIL']).SALES_PRICE.median()
+temp.plot(kind = 'bar', stacked = True)
+#6. Area-wise price for houses
+# average price for each area category
+
+df.pivot_table(values='SALES_PRICE', index='AREA', aggfunc='median')
+temp_df = df.loc[(df['AREA']=='Karapakkam')]
+temp_df['SALES_PRICE'].plot.hist(bins=50)
+temp_df = df.loc[(df['AREA']=='Anna Nagar')]
+temp_df['SALES_PRICE'].plot.hist(bins=50)
+#*7. Distance from main road *
+df.plot.scatter('DIST_MAINROAD', 'SALES_PRICE')
+#8. Type of street around the house
+df.groupby(['STREET']).SALES_PRICE.median()
+#House Sale Price
+#PRT_ID – The Property Transaction ID assigned by ChennaiEstate
+#COMMIS – The Commission paid to the agent
+#SALES_PRICE – The total sale price of the property
+# commission and sales price
+
+df.plot.scatter('SALES_PRICE', 'COMMIS')
+df[['SALES_PRICE', 'COMMIS']].corr()
+df.drop(['PRT_ID'], axis=1, inplace = True)
+df = pd.get_dummies(df)
+x = df.drop('SALES_PRICE', axis=1)
+y= df['SALES_PRICE']
+#Train Test Split
+from sklearn.model_selection import train_test_split
+train_x, valid_x, train_y, valid_y = train_test_split(x, y, test_size = 0.3, random_state = 2)
+
+train_x.shape, valid_x.shape, train_y.shape, valid_y.shape
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_log_error
+lreg = LinearRegression()
+lreg.fit(train_x, train_y)
+#Model Evaluation - RMSLE
+pred_train = lreg.predict(train_x)
+train_score = np.sqrt(mean_squared_log_error(train_y,pred_train))
+pred_test = lreg.predict(valid_x)
+valid_score=np.sqrt(mean_squared_log_error(valid_y,pred_test))
+print('Training score:', train_score)
+print('Validation score:', valid_score)
+
+
+
+
+
+
+
+
+
+
+
+
+
